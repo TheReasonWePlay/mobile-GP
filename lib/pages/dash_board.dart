@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class DashBoard extends StatefulWidget {
   const DashBoard({super.key});
@@ -8,297 +10,311 @@ class DashBoard extends StatefulWidget {
 }
 
 class _DashBoardState extends State<DashBoard> {
+  int present = 0;
+  int late = 0;
+  int agent = 0;
+  int percent = 0;
+  bool isLoading = true;
 
-  int present = 29;
-  int late = 18;
-  int agent = 32;
-  int percent = 86;
+  /// 🔹 Appel API pour récupérer les données du backend Node.js
+  Future<void> fetchDashboardData() async {
+    const String apiUrl = 'http://192.168.88.20:5000/api/mobile/dashBoard';
+    //print("📡 Tentative de connexion à l'API: $apiUrl");
 
-  Widget topWid = Container(
-    height: 300,
-    margin: EdgeInsets.all(0),
-    decoration: BoxDecoration(
-      color: Colors.deepPurple,
-      borderRadius: BorderRadius.vertical(bottom: Radius.circular(100)),
-      gradient: LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [
-          Colors.blueAccent,
-          Colors.deepPurpleAccent,
-      ])
-    ),
-    child: Container(
-      margin: EdgeInsets.only(top: 60, left: 40, right: 30),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    try {
+      final response = await http.get(Uri.parse(apiUrl));
+
+      //print("✅ Code de statut HTTP: ${response.statusCode}");
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        //print("📦 Réponse brute: ${response.body}");
+        //print("📊 Données parsées: $data");
+
+        setState(() {
+          present = data['present'] ?? 0;
+          late = data['late'] ?? 0;
+          agent = data['agent'] ?? 0;
+          percent = data['percent'] ?? 0;
+          isLoading = false;
+        });
+
+        //print("🎯 Mise à jour réussie -> present=$present, late=$late, agent=$agent, percent=$percent");
+      } else {
+        //print("❌ Erreur serveur (${response.statusCode}): ${response.reasonPhrase}");
+        setState(() => isLoading = false);
+      }
+    } catch (e) {
+      //print("🚨 Erreur de connexion à l'API: $e");
+      setState(() => isLoading = false);
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchDashboardData(); // 🔥 Appel dès l'ouverture de l'écran
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final width = size.width;
+    final height = size.height;
+
+    double h(double v) => v * height / 800;
+    double w(double v) => v * width / 400;
+
+    if (isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(color: Colors.blueAccent),
+      );
+    }
+
+    Widget topWid = Container(
+      height: h(300),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(w(100))),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.blueAccent, Colors.deepPurpleAccent],
+        ),
+      ),
+      child: Padding(
+        padding: EdgeInsets.only(top: h(60), left: w(30), right: w(20)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.calendar_month_outlined, color: Colors.white),
+                SizedBox(width: w(8)),
+                Text(
+                  "${DateTime.now().toLocal()}".split(' ')[0],
+                  style: const TextStyle(color: Colors.white, fontSize: 16),
+                ),
+              ],
+            ),
+            SizedBox(height: h(20)),
+            const Text(
+              "Welcome back",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 23,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const Text(
+              "Here's today's attendance overview",
+              style: TextStyle(color: Colors.white70, fontSize: 14),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    Widget averageCard = Column(
+      children: [
+        // --- Taux de présence ---
+        Container(
+          margin: EdgeInsets.only(top: h(210), left: w(20), right: w(20)),
+          height: h(180),
+          padding: EdgeInsets.symmetric(horizontal: w(25)),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border.all(color: Colors.blueAccent),
+            borderRadius: BorderRadius.circular(w(20)),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Icon(Icons.calendar_month_outlined, color: Colors.white,),
-              Text("Thursday, October 23",
-                style:
-                  TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
+              Padding(
+                padding: EdgeInsets.only(top: h(60)),
+                child: Column(
+                  children: [
+                    const Text(
+                      "Attendance Rate",
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    Text("$present of $agent checked in"),
+                  ],
+                ),
+              ),
+              Container(
+                padding: EdgeInsets.all(w(20)),
+                width: w(95),
+                height: h(80),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(w(10)),
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Colors.blueAccent, Colors.deepPurpleAccent],
                   ),
+                ),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    "$percent%",
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
-          Container(height: 20,),
-          Text("Welcome back",
-            style:
-            TextStyle(
-              color: Colors.white,
-              fontSize: 23,
-              fontWeight: FontWeight.bold,
+        ),
+
+        SizedBox(height: h(10)),
+
+        // --- Présent / En retard ---
+        Container(
+          margin: EdgeInsets.symmetric(horizontal: w(20)),
+          height: h(140),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(w(20)),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildMiniCard(
+                width: w(175),
+                title: "Present",
+                value: present,
+                color: Colors.greenAccent,
+                icon: Icons.person_outline,
+              ),
+              _buildMiniCard(
+                width: w(175),
+                title: "Late",
+                value: late,
+                color: Colors.orangeAccent,
+                icon: Icons.watch_later_outlined,
+              ),
+            ],
+          ),
+        ),
+
+        // --- Quick Scan ---
+        Container(
+          margin: EdgeInsets.only(top: h(48), left: w(20), right: w(20)),
+          height: h(90),
+          padding: EdgeInsets.symmetric(horizontal: w(30)),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(w(20)),
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Colors.blueAccent, Colors.deepPurpleAccent],
             ),
           ),
-          Text("Here's today's attendance overview",
-            style:
-            TextStyle(
-              color: Colors.white,
-              fontSize: 14,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Padding(
+                padding: EdgeInsets.only(top: h(20)),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text(
+                      "Quick Scan",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Text(
+                      "Make Attendance",
+                      style: TextStyle(color: Colors.white70),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                height: h(60),
+                width: h(60),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.white),
+                  borderRadius: BorderRadius.circular(h(30)),
+                ),
+                child: const Icon(Icons.arrow_forward, color: Colors.white),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              topWid,
+              averageCard,
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 🔹 Widget réutilisable pour les petites cartes (Present / Late)
+  Widget _buildMiniCard({
+    required double width,
+    required String title,
+    required int value,
+    required Color color,
+    required IconData icon,
+  }) {
+    return Container(
+      width: width,
+      padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: color),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+              ),
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: Colors.white),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              "$value",
+              style: const TextStyle(
+                fontSize: 30,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
             ),
           ),
         ],
       ),
-    )
-  );
-
-  late Widget averageCard = Column(
-    children: [
-      Container(
-        margin: EdgeInsets.only(top: 210, left: 20, right: 20),
-        height: 180,
-        padding: EdgeInsets.only(top: 0, left: 30, right: 30),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border.all(
-            color: Colors.blueAccent,
-          ),
-          borderRadius: BorderRadius.all(Radius.circular(20)),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.center,
-
-          children: [
-            Container(
-              margin: EdgeInsets.only(top: 64),
-              child: Column(
-                children: [
-                  Text("Attendance Rate",
-                    style:
-                    TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),),
-                  Text("$present of $agent checked in"),
-                ],
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.all(20),
-              width: 95,
-              height: 80,
-              decoration: BoxDecoration(
-                color: Colors.blueAccent,
-                borderRadius: BorderRadius.all(Radius.circular(10)),
-                  gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Colors.blueAccent,
-                        Colors.deepPurpleAccent,
-                      ])
-              ),
-              child: Text("$percent%",
-                style:
-                TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-      //---------------------------------------------------------------
-      Container(
-        margin: EdgeInsets.only(top: 5, left: 20, right: 20),
-        height: 140,
-        padding: EdgeInsets.only(top: 10, left: 0, right: 0),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.all(Radius.circular(20)),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.start,
-
-          children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 180,
-                    margin: EdgeInsets.only(right: 10),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      border: Border.all(
-                        color: Colors.greenAccent,
-                      ),
-                      borderRadius: BorderRadius.all(Radius.circular(20)),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      spacing: 10,
-                      children: [
-                        Container(
-                          padding: EdgeInsets.only(left: 25, right: 25),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text("Present", style: TextStyle(
-                                fontSize: 17,
-                                fontWeight: FontWeight.bold,
-                              ),),
-                              Container(
-                                padding: EdgeInsets.all(6),
-                                decoration: BoxDecoration(
-                                  color: Colors.greenAccent,
-                                  borderRadius: BorderRadius.all(Radius.circular(12)),
-                                ),
-                                child: Icon(Icons.person_outline, color: Colors.white,),
-                              )
-                            ],
-                          ),
-                        ),
-                        Text("$present", style: TextStyle(
-                          fontSize: 30,
-                          fontWeight: FontWeight.bold,
-                        ),)
-                      ],
-                    ),
-                  ),
-                  Container(
-                    width: 180,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      border: Border.all(
-                        color: Colors.orangeAccent,
-                      ),
-                      borderRadius: BorderRadius.all(Radius.circular(20)),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      spacing: 10,
-                      children: [
-                        Container(
-                          padding: EdgeInsets.only(left: 25, right: 25),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text("Late", style: TextStyle(
-                                fontSize: 17,
-                                fontWeight: FontWeight.bold,
-                              ),),
-                              Container(
-                                padding: EdgeInsets.all(6),
-                                decoration: BoxDecoration(
-                                  color: Colors.orangeAccent,
-                                  borderRadius: BorderRadius.all(Radius.circular(12)),
-                                ),
-                                child: Icon(Icons.watch_later_outlined, color: Colors.white,),
-                              )
-                            ],
-                          ),
-                        ),
-                        Text("$late", style: TextStyle(
-                          fontSize: 30,
-                          fontWeight: FontWeight.bold,
-                        ),)
-                      ],
-                    ),
-                  )
-                ],
-              )
-          ],
-        ),
-      ),
-      //---------------------------------------------------------------------
-      Container(
-        margin: EdgeInsets.only(top: 48, left: 20, right: 20),
-        height: 90,
-        padding: EdgeInsets.only(top: 0, left: 30, right: 30),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-            Colors.blueAccent,
-            Colors.deepPurpleAccent,
-          ]),
-          borderRadius: BorderRadius.all(Radius.circular(20)),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              height: 80,
-              margin: EdgeInsets.only(top: 20),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Text("Quick Scan", style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),),
-                  Text(" Make Attendance", style: TextStyle(
-                    color: Colors.white,
-                  ),),
-                ],
-              ),
-            ),
-            Container(
-              height: 60,
-              width: 60,
-              decoration: BoxDecoration(
-                color: Colors.transparent,
-                border: Border.all(
-                  color: Colors.white,
-                ),
-                borderRadius: BorderRadius.all(Radius.circular(30)),
-              ),
-              child: Icon(Icons.arrow_forward, color: Colors.white,),
-            ),
-          ],
-        ),
-      ),
-    ],
-  );
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Stack(
-          children: [
-            topWid,
-            averageCard,
-          ],
-        )
-      ],
     );
   }
 }

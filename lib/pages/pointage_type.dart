@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../main.dart';
+import '../services/history_service.dart';
 
 class PointageTypeScreen extends StatefulWidget {
   final String qrCodeData;
@@ -100,7 +101,7 @@ class _PointageTypeScreenState extends State<PointageTypeScreen> {
   Future<void> fetchInfo() async {
     try {
       final url = Uri.parse(
-          "http://192.168.88.20:5000/api/mobile/info?matricule=${widget.qrCodeData}");
+          "http://192.168.88.18:5000/api/mobile/info?matricule=${widget.qrCodeData}");
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
@@ -137,7 +138,7 @@ class _PointageTypeScreenState extends State<PointageTypeScreen> {
     setState(() => isLoading1 = true);
 
     try {
-      final url = Uri.parse("http://192.168.88.20:5000/api/mobile/pointage");
+      final url = Uri.parse("http://192.168.88.18:5000/api/mobile/pointage");
       final response = await http.post(
         url,
         headers: {"Content-Type": "application/json"},
@@ -150,6 +151,8 @@ class _PointageTypeScreenState extends State<PointageTypeScreen> {
       );
 
       if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        await HistoryService.addToHistory("$nomComplet ${data['message']}");
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text("Pointage $type enregistré !"),
@@ -321,7 +324,7 @@ class _PointageTypeScreenState extends State<PointageTypeScreen> {
             desc,
             "$h_sortie - $h_rentree",
             Icons.logout_rounded,
-            color: Colors.orangeAccent,
+            color: Colors.redAccent,
             onPressed: () => onPointagePressed("Return", "", idLeave),
           ),
         ],
@@ -340,7 +343,7 @@ class _PointageTypeScreenState extends State<PointageTypeScreen> {
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color:
-            (title == "Attendance") ? Colors.blueAccent : Colors.orangeAccent,
+            (title == "Attendance") ? Colors.blueAccent : Colors.redAccent,
           ),
         ),
         child: Column(
@@ -373,7 +376,7 @@ class _PointageTypeScreenState extends State<PointageTypeScreen> {
         decoration: BoxDecoration(
           color: Colors.grey.shade50,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.orangeAccent),
+          border: Border.all(color: Colors.redAccent),
         ),
         child: Row(
           children: [
@@ -443,7 +446,7 @@ class _PointageTypeScreenState extends State<PointageTypeScreen> {
                   : const Text("Pointer",
                   style: TextStyle(color: Colors.white, fontSize: 16)),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orangeAccent,
+                backgroundColor: Colors.redAccent,
                 padding:
                 const EdgeInsets.symmetric(horizontal: 17, vertical: 8),
                 shape: RoundedRectangleBorder(

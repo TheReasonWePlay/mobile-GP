@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:untitled/pages/qr_scanner.dart';
 
 class DashBoard extends StatefulWidget {
   const DashBoard({super.key});
@@ -18,7 +19,7 @@ class _DashBoardState extends State<DashBoard> {
 
   /// 🔹 Appel API pour récupérer les données du backend Node.js
   Future<void> fetchDashboardData() async {
-    const String apiUrl = 'http://192.168.88.20:5000/api/mobile/dashBoard';
+    const String apiUrl = 'http://192.168.88.18:5000/api/mobile/dashBoard';
     //print("📡 Tentative de connexion à l'API: $apiUrl");
 
     try {
@@ -185,14 +186,14 @@ class _DashBoardState extends State<DashBoard> {
                 width: w(175),
                 title: "Present",
                 value: present,
-                color: Colors.greenAccent,
+                color: Colors.blueAccent,
                 icon: Icons.person_outline,
               ),
               _buildMiniCard(
                 width: w(175),
                 title: "Late",
                 value: late,
-                color: Colors.orangeAccent,
+                color: Colors.redAccent,
                 icon: Icons.watch_later_outlined,
               ),
             ],
@@ -200,53 +201,73 @@ class _DashBoardState extends State<DashBoard> {
         ),
 
         // --- Quick Scan ---
-        Container(
-          margin: EdgeInsets.only(top: h(48), left: w(20), right: w(20)),
-          height: h(90),
-          padding: EdgeInsets.symmetric(horizontal: w(30)),
-          decoration: BoxDecoration(
+        Material(
+          color: Colors.transparent, // pour afficher le ripple sur le gradient
+          child: InkWell(
             borderRadius: BorderRadius.circular(w(20)),
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Colors.blueAccent, Colors.deepPurpleAccent],
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const QrScanner()),
+              );
+            },
+            child: Container(
+              margin: EdgeInsets.only(top: h(48), left: w(20), right: w(20)),
+              height: h(90),
+              padding: EdgeInsets.symmetric(horizontal: w(30)),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(w(20)),
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Colors.blueAccent, Colors.deepPurpleAccent],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.deepPurpleAccent.withOpacity(0.3),
+                    blurRadius: 10,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(top: h(20)),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        Text(
+                          "Quick Scan",
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        Text(
+                          "Make Attendance",
+                          style: TextStyle(color: Colors.white70),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    height: h(60),
+                    width: h(60),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.white),
+                      borderRadius: BorderRadius.circular(h(30)),
+                    ),
+                    child: const Icon(Icons.arrow_forward, color: Colors.white),
+                  ),
+                ],
+              ),
             ),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Padding(
-                padding: EdgeInsets.only(top: h(20)),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text(
-                      "Quick Scan",
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    Text(
-                      "Make Attendance",
-                      style: TextStyle(color: Colors.white70),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                height: h(60),
-                width: h(60),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.white),
-                  borderRadius: BorderRadius.circular(h(30)),
-                ),
-                child: const Icon(Icons.arrow_forward, color: Colors.white),
-              ),
-            ],
-          ),
         ),
+
       ],
     );
 

@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../main.dart';
 import '../services/history_service.dart';
+import '../utils/api_service.dart';
 
 class PointageTypeScreen extends StatefulWidget {
   final String qrCodeData;
@@ -101,8 +102,8 @@ class _PointageTypeScreenState extends State<PointageTypeScreen> {
   Future<void> fetchInfo() async {
     try {
       final url = Uri.parse(
-          "http://192.168.88.18:5000/api/mobile/info?matricule=${widget.qrCodeData}");
-      final response = await http.get(url);
+          "http://192.168.88.238:5000/api/mobile/info?matricule=${widget.qrCodeData}");
+      final response = await ApiService.fetchWithAuth(url);
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -138,10 +139,10 @@ class _PointageTypeScreenState extends State<PointageTypeScreen> {
     setState(() => isLoading1 = true);
 
     try {
-      final url = Uri.parse("http://192.168.88.18:5000/api/mobile/pointage");
-      final response = await http.post(
+      final url = Uri.parse("http://192.168.88.238:5000/api/mobile/pointage");
+      final response = await ApiService.fetchWithAuth(
         url,
-        headers: {"Content-Type": "application/json"},
+        method: 'POST',
         body: jsonEncode({
           "type": type,
           "matricule": widget.qrCodeData,

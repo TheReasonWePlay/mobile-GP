@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:untitled/pages/qr_scanner.dart';
 
+import '../utils/api_service.dart';
+
 class DashBoard extends StatefulWidget {
   const DashBoard({super.key});
 
@@ -19,11 +21,11 @@ class _DashBoardState extends State<DashBoard> {
 
   /// 🔹 Appel API pour récupérer les données du backend Node.js
   Future<void> fetchDashboardData() async {
-    const String apiUrl = 'http://192.168.88.18:5000/api/mobile/dashBoard';
+    const String apiUrl = 'http://192.168.88.238:5000/api/mobile/dashBoard';
     //print("📡 Tentative de connexion à l'API: $apiUrl");
 
     try {
-      final response = await http.get(Uri.parse(apiUrl));
+      final response = await ApiService.fetchWithAuth(Uri.parse(apiUrl));
 
       //print("✅ Code de statut HTTP: ${response.statusCode}");
 

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'dart:convert';
 import '../main.dart';
 import '../services/history_service.dart';
@@ -101,8 +103,9 @@ class _PointageTypeScreenState extends State<PointageTypeScreen> {
 
   Future<void> fetchInfo() async {
     try {
+      final baseUrl = dotenv.env['BASE_URL'] ?? '';
       final url = Uri.parse(
-          "http://192.168.88.238:5000/api/mobile/info?matricule=${widget.qrCodeData}");
+          "$baseUrl/mobile/info?matricule=${widget.qrCodeData}");
       final response = await ApiService.fetchWithAuth(url);
 
       if (response.statusCode == 200) {
@@ -139,7 +142,8 @@ class _PointageTypeScreenState extends State<PointageTypeScreen> {
     setState(() => isLoading1 = true);
 
     try {
-      final url = Uri.parse("http://192.168.88.238:5000/api/mobile/pointage");
+      final baseUrl = dotenv.env['BASE_URL'] ?? '';
+      final url = Uri.parse("$baseUrl/mobile/pointage");
       final response = await ApiService.fetchWithAuth(
         url,
         method: 'POST',
@@ -166,8 +170,9 @@ class _PointageTypeScreenState extends State<PointageTypeScreen> {
         if (!mounted) return;
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => MyApp()),
+          MaterialPageRoute(builder: (_) => const HomePage()),
         );
+
       } else {
         throw Exception("Erreur ${response.statusCode}");
       }
@@ -191,6 +196,8 @@ class _PointageTypeScreenState extends State<PointageTypeScreen> {
     final height = size.height;
     final theme = Theme.of(context);
 
+
+
     double h(double v) => v * height / 800;
     double w(double v) => v * width / 400;
 
@@ -201,6 +208,7 @@ class _PointageTypeScreenState extends State<PointageTypeScreen> {
     }
 
     Widget topWid = Container(
+
       height: h(280),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(w(80))),
@@ -225,12 +233,12 @@ class _PointageTypeScreenState extends State<PointageTypeScreen> {
             children: [
               SizedBox(height: h(25)),
               Row(
-                children: const [
+                children: [
                   Icon(Icons.calendar_month_outlined,
                       color: Colors.white, size: 25),
                   SizedBox(width: 8),
                   Text(
-                    "Thursday, October 23",
+                    DateFormat('EEEE, d MMM yyyy').format(DateTime.now()),
                     style: TextStyle(color: Colors.white, fontSize: 20),
                   ),
                 ],
@@ -396,39 +404,51 @@ class _PointageTypeScreenState extends State<PointageTypeScreen> {
                   ? null
                   : () {
                 final desc = descriptionController.text.trim();
+                final RegExp descRegex = RegExp(r'^[a-zA-ZÀ-ÿ0-9\s\-\.,!?]+$');
+
                 if (desc.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                        content:
-                        Text("Veuillez entrer une description.")),
+                        content: Text("Veuillez entrer une description.")),
+                  );
+                  return;
+                }
+
+                if (!descRegex.hasMatch(desc)) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text(
+                            "La description contient des caractères non autorisés.")),
+                  );
+                  return;
+                }
+
+                // Logique métier existante :
+                if ((c_in_AM == "00:00" && c_in_PM == "00:00") ||
+                    (c_out_AM != "00:00" && c_in_PM == "00:00")) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                          "Un agent qui n'a pas de pointage ne peut pas sortir."),
+                    ),
                   );
                 } else {
-                  if ((c_in_AM == "00:00" && c_in_PM == "00:00") ||
-                      (c_out_AM != "00:00" && c_in_PM == "00:00")) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                            "Un agent qui n'a pas de pointage ne peut pas sortir."),
-                      ),
-                    );
-                  } else {
-                    if (sorties.isNotEmpty) {
-                      final derniereSortie = sorties.last;
-                      if (derniereSortie.hRentree != "00:00") {
-                        onPointagePressed("Leaving", desc, "");
-                        descriptionController.clear();
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                                "Un agent qui n'est pas rentré ne peut pas sortir."),
-                          ),
-                        );
-                      }
-                    } else {
+                  if (sorties.isNotEmpty) {
+                    final derniereSortie = sorties.last;
+                    if (derniereSortie.hRentree != "00:00") {
                       onPointagePressed("Leaving", desc, "");
                       descriptionController.clear();
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                              "Un agent qui n'est pas rentré ne peut pas sortir."),
+                        ),
+                      );
                     }
+                  } else {
+                    onPointagePressed("Leaving", desc, "");
+                    descriptionController.clear();
                   }
                 }
               },
@@ -456,6 +476,7 @@ class _PointageTypeScreenState extends State<PointageTypeScreen> {
                 elevation: 2,
               ),
             ),
+
           ],
         ),
       );

@@ -1,9 +1,10 @@
 import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
-  static const String baseUrl = "http://192.168.x.x:5000/api";
+  static String baseUrl = dotenv.env['BASE_URL'] ?? '';
 
   /// Récupère le token d'accès depuis SharedPreferences
   static Future<String?> getAccessToken() async {
@@ -15,6 +16,8 @@ class AuthService {
   static Future<String?> refreshAccessToken() async {
     final prefs = await SharedPreferences.getInstance();
     final refreshToken = prefs.getString('refresh_token');
+    print("refresh tkn");
+    print(refreshToken);
 
     if (refreshToken == null) return null;
 
@@ -24,15 +27,17 @@ class AuthService {
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'refreshToken': refreshToken}),
       );
-
+      print("before if");
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final newAccessToken = data['accessToken'];
-
+        print("newaccestoken : ");
+        print(newAccessToken);
         // Sauvegarde du nouveau token
         await prefs.setString('auth_token', newAccessToken);
         return newAccessToken;
       } else {
+        print("dans else");
         return null;
       }
     } catch (e) {

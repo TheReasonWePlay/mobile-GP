@@ -1,10 +1,23 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:flutter/material.dart';
+import '../main.dart';
 import '../services/auth_service.dart';
 
 class ApiService {
+
+
+  static Future<void> handleSessionExpired() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+
+    // Redirection vers la page login en supprimant tout l'historique de navigation
+    navigatorKey.currentState?.pushNamedAndRemoveUntil(
+      '/login',
+          (Route<dynamic> route) => false,
+    );
+  }
   /// Requête HTTP avec gestion automatique du token
   static Future<http.Response> fetchWithAuth(
       Uri url, {
@@ -33,9 +46,7 @@ class ApiService {
       final newToken = await AuthService.refreshAccessToken();
 
       if (newToken == null) {
-        print('❌ Impossible de rafraîchir le token, redirection vers login');
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.clear();
+        await handleSessionExpired();
         throw Exception('Session expirée');
       }
 

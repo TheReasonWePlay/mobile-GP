@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:untitled/pages/qr_scanner.dart';
 
@@ -21,7 +22,8 @@ class _DashBoardState extends State<DashBoard> {
 
   /// 🔹 Appel API pour récupérer les données du backend Node.js
   Future<void> fetchDashboardData() async {
-    const String apiUrl = 'http://192.168.88.238:5000/api/mobile/dashBoard';
+    final baseUrl = dotenv.env['BASE_URL'] ?? '';
+    final String apiUrl = '$baseUrl/mobile/dashBoard';
     //print("📡 Tentative de connexion à l'API: $apiUrl");
 
     try {

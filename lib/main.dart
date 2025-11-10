@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:untitled/pages/dash_board.dart';
 import 'package:untitled/pages/history.dart';
@@ -6,8 +7,14 @@ import 'package:untitled/pages/qr_scanner.dart';
 import 'package:untitled/pages/settings.dart';
 import 'login.dart';
 
-void main() async {
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Charger les variables depuis .env
+  await dotenv.load(fileName: ".env");
+
   final prefs = await SharedPreferences.getInstance();
   final token = prefs.getString('auth_token');
 
@@ -22,12 +29,16 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Attendance Scan Manager',
+      navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
       home: initialPage,
+      routes: {
+        '/login': (context) => const LoginPage(),
+        '/home': (context) => const HomePage(),
+      },
     );
   }
 }
-
 /// Page principale avec navigation
 class HomePage extends StatefulWidget {
   const HomePage({super.key});

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:untitled/pages/dash_board.dart';
@@ -6,11 +7,21 @@ import 'package:untitled/pages/history.dart';
 import 'package:untitled/pages/qr_scanner.dart';
 import 'package:untitled/pages/settings.dart';
 import 'login.dart';
+import 'package:intl/intl.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Figer en portrait uniquement
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+  ]);
+
+  await initializeDateFormatting('fr_FR', null); // ⚠️ important
+  Intl.defaultLocale = 'fr_FR';
 
   // Charger les variables depuis .env
   await dotenv.load(fileName: ".env");
@@ -108,11 +119,11 @@ class _HomePageState extends State<HomePage> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.history),
-            label: "History",
+            label: "Historiques",
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),
-            label: "Settings",
+            label: "Paramètre",
           )
         ],
       ),

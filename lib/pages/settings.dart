@@ -94,70 +94,7 @@ class _SettingsState extends State<Settings> {
                 ),
               ),
 
-              const SizedBox(height: 30),
 
-              // --- Section Paramètres généraux ---
-              _buildSection(
-                title: "Paramètres généraux",
-                textColor: textColor,
-                child: Column(
-                  children: [
-                    SwitchListTile(
-                      contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 16),
-                      title: const Text("Mode sombre"),
-                      secondary:
-                      const Icon(Icons.dark_mode, color: Colors.blueAccent),
-                      value: _darkMode,
-                      activeColor: Colors.blueAccent,
-                      onChanged: (value) {
-                        setState(() => _darkMode = value);
-                      },
-                    ),
-                    const Divider(height: 0),
-                    SwitchListTile(
-                      contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 16),
-                      title: const Text("Notifications"),
-                      secondary: const Icon(Icons.notifications_active,
-                          color: Colors.blueAccent),
-                      value: _notifications,
-                      activeColor: Colors.blueAccent,
-                      onChanged: (value) {
-                        setState(() => _notifications = value);
-                      },
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 30),
-
-              // --- Section Compte ---
-              _buildSection(
-                title: "Compte",
-                textColor: textColor,
-                child: Column(
-                  children: [
-                    ListTile(
-                      leading:
-                      const Icon(Icons.person, color: Colors.blueAccent),
-                      title: const Text("Profil"),
-                      subtitle: const Text("Modifier vos informations"),
-                      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                      onTap: () {},
-                    ),
-                    const Divider(height: 0),
-                    ListTile(
-                      leading:
-                      const Icon(Icons.lock, color: Colors.blueAccent),
-                      title: const Text("Changer le mot de passe"),
-                      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                      onTap: () {},
-                    ),
-                  ],
-                ),
-              ),
 
               const SizedBox(height: 40),
 

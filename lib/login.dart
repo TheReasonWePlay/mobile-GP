@@ -88,7 +88,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 10),
               const Text(
-                "Attendance Scan Manager",
+                "Pointage SRB HM",
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
@@ -180,7 +180,7 @@ class _LoginPageState extends State<LoginPage> {
 
               const SizedBox(height: 25),
               Text(
-                "© 2025 SmartScan Team",
+                "© 2025 SRB HM",
                 style: TextStyle(
                   color: Colors.white70,
                   fontSize: 13,

@@ -141,6 +141,7 @@ class _PointageTypeScreenState extends State<PointageTypeScreen> {
     if (isLoading1) return; // Empêche les clics multiples
     setState(() => isLoading1 = true);
 
+
     try {
       final baseUrl = dotenv.env['BASE_URL'] ?? '';
       final url = Uri.parse("$baseUrl/mobile/pointage");
@@ -157,21 +158,32 @@ class _PointageTypeScreenState extends State<PointageTypeScreen> {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        await HistoryService.addToHistory("$nomComplet ${data['message']}");
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Pointage $type enregistré !"),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 1),
-          ),
-        );
+        if(data['success'] == false){
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(data['message']),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 1),
+            ),
+          );
+        }
+        else{
+          await HistoryService.addToHistory("$nomComplet ${data['message']}");
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("Pointage $type enregistré !"),
+              backgroundColor: Colors.green,
+              duration: const Duration(seconds: 1),
+            ),
+          );
 
-        await Future.delayed(const Duration(seconds: 1));
-        if (!mounted) return;
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const HomePage()),
-        );
+          await Future.delayed(const Duration(seconds: 1));
+          if (!mounted) return;
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const HomePage()),
+          );
+        }
 
       } else {
         throw Exception("Erreur ${response.statusCode}");
@@ -352,7 +364,7 @@ class _PointageTypeScreenState extends State<PointageTypeScreen> {
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color:
-            (title == "Attendance") ? Colors.blueAccent : Colors.redAccent,
+            (title == "Présence") ? Colors.blueAccent : Colors.redAccent,
           ),
         ),
         child: Column(
@@ -498,11 +510,11 @@ class _PointageTypeScreenState extends State<PointageTypeScreen> {
                   children: [
                     SizedBox(height: h(200)),
                     sectionContainer(
-                      title: "Attendance",
+                      title: "Présence",
                       children: [
                         Align(
                             alignment: Alignment.centerLeft,
-                            child: Text("Morning",
+                            child: Text("Matinée",
                                 style: theme.textTheme.titleMedium)),
                         timeRow("Morning", "$c_in_AM - $c_out_AM",
                             Icons.login_rounded, onPressed: () {
@@ -510,7 +522,7 @@ class _PointageTypeScreenState extends State<PointageTypeScreen> {
                             }),
                         Align(
                             alignment: Alignment.centerLeft,
-                            child: Text("Afternoon",
+                            child: Text("Après-midi",
                                 style: theme.textTheme.titleMedium)),
                         timeRow("Afternoon", "$c_in_PM - $c_out_PM",
                             Icons.login_rounded, onPressed: () {
@@ -528,7 +540,7 @@ class _PointageTypeScreenState extends State<PointageTypeScreen> {
                       ],
                     ),
                     sectionContainer(
-                      title: "Leaving",
+                      title: "Sortie",
                       children: [
                         ...sorties.map((sortie) {
                           return sectionLeaving(
@@ -541,7 +553,7 @@ class _PointageTypeScreenState extends State<PointageTypeScreen> {
                         }).toList(),
                         Align(
                             alignment: Alignment.centerLeft,
-                            child: Text("New",
+                            child: Text("Nouveau",
                                 style: theme.textTheme.titleMedium)),
                         newRow(),
                       ],

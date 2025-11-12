@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:untitled/pages/qr_scanner.dart';
+import 'package:intl/intl.dart';
 
 import '../utils/api_service.dart';
 
@@ -96,14 +97,14 @@ class _DashBoardState extends State<DashBoard> {
                 const Icon(Icons.calendar_month_outlined, color: Colors.white),
                 SizedBox(width: w(8)),
                 Text(
-                  "${DateTime.now().toLocal()}".split(' ')[0],
+                  "${DateFormat('EEEE, d MMM yyyy').format(DateTime.now())}",
                   style: const TextStyle(color: Colors.white, fontSize: 16),
                 ),
               ],
             ),
             SizedBox(height: h(20)),
             const Text(
-              "Welcome back",
+              "Tableau de Bord",
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 23,
@@ -111,7 +112,7 @@ class _DashBoardState extends State<DashBoard> {
               ),
             ),
             const Text(
-              "Here's today's attendance overview",
+              "Statistique des pointages éffectués",
               style: TextStyle(color: Colors.white70, fontSize: 14),
             ),
           ],
@@ -139,10 +140,10 @@ class _DashBoardState extends State<DashBoard> {
                 child: Column(
                   children: [
                     const Text(
-                      "Attendance Rate",
+                      "Taux de pointage",
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
-                    Text("$present of $agent checked in"),
+                    Text("$present sur $agent pointé"),
                   ],
                 ),
               ),
@@ -195,7 +196,7 @@ class _DashBoardState extends State<DashBoard> {
               ),
               _buildMiniCard(
                 width: w(175),
-                title: "Late",
+                title: "En retard",
                 value: late,
                 color: Colors.redAccent,
                 icon: Icons.watch_later_outlined,
@@ -243,7 +244,7 @@ class _DashBoardState extends State<DashBoard> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: const [
                         Text(
-                          "Quick Scan",
+                          "Scan rapide",
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -251,7 +252,7 @@ class _DashBoardState extends State<DashBoard> {
                           ),
                         ),
                         Text(
-                          "Make Attendance",
+                          "Faire un pointage",
                           style: TextStyle(color: Colors.white70),
                         ),
                       ],

@@ -32,6 +32,34 @@ class _HistoryState extends State<History> {
     });
   }
 
+  String traduireAction(String message) {
+    // Liste de remplacements courants
+    final Map<String, String> traductions = {
+      'Check in': 'arrivé(e) au bureau',
+      'Check out': 'quitté le bureau',
+      'Leaving': 'est sorti(e)',
+      'Return': 'est rentré(e)',
+      'at': 'à',
+    };
+
+    // Remplacer les mots anglais par leur équivalent français
+    traductions.forEach((anglais, francais) {
+      message = message.replaceAll(anglais, francais);
+    });
+
+    // Expression régulière pour détecter une heure du type HH:mm:ss
+    final regexHeure = RegExp(r'\b(\d{2}):(\d{2}):\d{2}\b');
+
+    // Transformer 09:33:23 → 09h33
+    message = message.replaceAllMapped(regexHeure, (match) {
+      final heure = match.group(1);
+      final minute = match.group(2);
+      return '${heure}h${minute}';
+    });
+
+    return message;
+  }
+
   @override
   Widget build(BuildContext context) {
     final today = DateFormat('EEEE, d MMM yyyy').format(DateTime.now());
@@ -71,7 +99,7 @@ class _HistoryState extends State<History> {
                   ),
                   const SizedBox(height: 20),
                   const Text(
-                    "Recent Activity",
+                    "Activité récente",
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 23,
@@ -149,7 +177,7 @@ class _HistoryState extends State<History> {
                       ),
                     ),
                     title: Text(
-                      item,
+                      traduireAction(item),
                       style: const TextStyle(
                         fontSize: 15.5,
                         color: Colors.black87,
@@ -157,7 +185,7 @@ class _HistoryState extends State<History> {
                       ),
                     ),
                     subtitle: Text(
-                      "Effectué à $timePart",
+                      "Pointé à $timePart",
                       style: TextStyle(
                         fontSize: 13,
                         color: Colors.grey.shade600,

@@ -16,9 +16,6 @@ class HistoryService {
     final prefs = await SharedPreferences.getInstance();
     List<String> history = prefs.getStringList(_key) ?? [];
 
-    print("liste =");
-    print(history);
-
     // Empêcher les doublons successifs
     if (history.isNotEmpty && history.first == item) return;
 

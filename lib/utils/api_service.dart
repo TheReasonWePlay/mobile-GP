@@ -10,7 +10,7 @@ class ApiService {
 
   static Future<void> handleSessionExpired() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
+    await prefs.remove('auth_token');
 
     // Redirection vers la page login en supprimant tout l'historique de navigation
     navigatorKey.currentState?.pushNamedAndRemoveUntil(

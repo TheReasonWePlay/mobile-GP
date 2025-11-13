@@ -16,6 +16,14 @@ class PointageTypeScreen extends StatefulWidget {
   State<PointageTypeScreen> createState() => _PointageTypeScreenState();
 }
 
+String removeSeconds(String time) {
+  List<String> parts = time.split(':');
+  if (parts.length >= 2) {
+    return '${parts[0]}:${parts[1]}';
+  }
+  return time;
+}
+
 class Sortie {
   final String descr;
   final String hSortie;
@@ -32,8 +40,8 @@ class Sortie {
   factory Sortie.fromJson(Map<String, dynamic> json) {
     return Sortie(
       descr: json['descr'] ?? "",
-      hSortie: json['hSortie'] ?? "",
-      hRentree: json['hRentree'] ?? "",
+      hSortie: removeSeconds(json['hSortie']) ?? "",
+      hRentree: removeSeconds(json['hRentree']) ?? "",
       idLeave: json['idLeave'] ?? "",
     );
   }
@@ -102,6 +110,7 @@ class _PointageTypeScreenState extends State<PointageTypeScreen> {
   }
 
   Future<void> fetchInfo() async {
+
     try {
       final baseUrl = dotenv.env['BASE_URL'] ?? '';
       final url = Uri.parse(
@@ -110,13 +119,12 @@ class _PointageTypeScreenState extends State<PointageTypeScreen> {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-
         setState(() {
           nomComplet = data['nom'] ?? "Aucun nom trouvé";
-          c_in_AM = data['c_in_AM'] ?? "00:00";
-          c_out_AM = data['c_out_AM'] ?? "00:00";
-          c_in_PM = data['c_in_PM'] ?? "00:00";
-          c_out_PM = data['c_out_PM'] ?? "00:00";
+          c_in_AM = removeSeconds(data['c_in_AM']) ?? "00:00";
+          c_out_AM = removeSeconds(data['c_out_AM']) ?? "00:00";
+          c_in_PM = removeSeconds(data['c_in_PM']) ?? "00:00";
+          c_out_PM = removeSeconds(data['c_out_PM']) ?? "00:00";
           sorties = (data['sorties'] as List)
               .map((e) => Sortie.fromJson(e))
               .toList();
